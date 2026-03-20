@@ -9,7 +9,7 @@
       font-family: Arial;
       background-color: #111;
       color: white;
-      margin-top: 80px;
+      margin-top: 50px;
     }
 
     h1 {
@@ -41,13 +41,17 @@
       margin: 10px;
       color: lightgreen;
     }
+
+    #ranking {
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
 
 <h1>🎰 Cassino do Rikelme 🎰</h1>
 
-<div id="saldo">Saldo: R$100</div>
+<div id="saldo"></div>
 
 <div id="slots">❓ ❓ ❓</div>
 
@@ -55,13 +59,67 @@
 
 <div id="resultado"></div>
 
+<div id="ranking">
+  <h2>🏆 Ranking</h2>
+  <ol id="listaRanking"></ol>
+</div>
+
 <script>
-  let saldo = 100;
+  let saldo = localStorage.getItem("saldo") ? parseInt(localStorage.getItem("saldo")) : 100;
   const aposta = 10;
   const emojis = ["7️⃣", "🍀", "💣"];
 
+  let nome = localStorage.getItem("nome");
+  if (!nome) {
+    nome = prompt("Digite seu nome:");
+    localStorage.setItem("nome", nome);
+  }
+
   function atualizarSaldo() {
     document.getElementById("saldo").innerHTML = "Saldo: R$" + saldo;
+    localStorage.setItem("saldo", saldo);
+  }
+
+  function atualizarRanking() {
+    let ranking = JSON.parse(localStorage.getItem("ranking")) || [];
+    let jogador = ranking.find(j => j.nome === nome);
+
+    if (!jogador) {
+      ranking.push({ nome: nome, saldo: saldo });
+    } else {
+      jogador.saldo = saldo;
+    }
+
+    ranking.sort((a, b) => b.saldo - a.saldo);
+    ranking = ranking.slice(0, 5);
+
+    localStorage.setItem("ranking", JSON.stringify(ranking));
+
+    let lista = document.getElementById("listaRanking");
+    lista.innerHTML = "";
+
+    ranking.forEach(j => {
+      let li = document.createElement("li");
+      li.textContent = j.nome + " - R$" + j.saldo;
+      lista.appendChild(li);
+    });
+  }
+
+  function animarSlots(callback) {
+    let contador = 0;
+    let intervalo = setInterval(() => {
+      let a = emojis[Math.floor(Math.random() * emojis.length)];
+      let b = emojis[Math.floor(Math.random() * emojis.length)];
+      let c = emojis[Math.floor(Math.random() * emojis.length)];
+
+      document.getElementById("slots").innerHTML = a + " " + b + " " + c;
+
+      contador++;
+      if (contador > 10) {
+        clearInterval(intervalo);
+        callback(a, b, c);
+      }
+    }, 100);
   }
 
   function girar() {
@@ -72,23 +130,23 @@
 
     saldo -= aposta;
 
-    let a = emojis[Math.floor(Math.random() * emojis.length)];
-    let b = emojis[Math.floor(Math.random() * emojis.length)];
-    let c = emojis[Math.floor(Math.random() * emojis.length)];
+    animarSlots((a, b, c) => {
+      if (a === b && b === c) {
+        saldo += 50;
+        document.getElementById("resultado").innerHTML = "🎉 JACKPOT! +R$50";
+      } else if (a === "💣" || b === "💣" || c === "💣") {
+        document.getElementById("resultado").innerHTML = "💥 Perdeu!";
+      } else {
+        document.getElementById("resultado").innerHTML = "😅 Nada dessa vez...";
+      }
 
-    document.getElementById("slots").innerHTML = a + " " + b + " " + c;
-
-    if (a === b && b === c) {
-      saldo += 50;
-      document.getElementById("resultado").innerHTML = "🎉 JACKPOT! +R$50";
-    } else if (a === "💣" || b === "💣" || c === "💣") {
-      document.getElementById("resultado").innerHTML = "💥 Perdeu tudo nessa rodada!";
-    } else {
-      document.getElementById("resultado").innerHTML = "😅 Nada dessa vez...";
-    }
-
-    atualizarSaldo();
+      atualizarSaldo();
+      atualizarRanking();
+    });
   }
+
+  atualizarSaldo();
+  atualizarRanking();
 </script>
 
 </body>
