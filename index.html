@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cassino do Rikelme 🎰</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+      background-color: #111;
+      color: white;
+      margin-top: 80px;
+    }
+
+    h1 {
+      color: gold;
+    }
+
+    #slots {
+      font-size: 60px;
+      margin: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      background-color: green;
+      color: white;
+      cursor: pointer;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-size: 22px;
+    }
+
+    #saldo {
+      font-size: 20px;
+      margin: 10px;
+      color: lightgreen;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎰 Cassino do Rikelme 🎰</h1>
+
+<div id="saldo">Saldo: R$100</div>
+
+<div id="slots">❓ ❓ ❓</div>
+
+<button onclick="girar()">Apostar R$10</button>
+
+<div id="resultado"></div>
+
+<script>
+  let saldo = 100;
+  const aposta = 10;
+  const emojis = ["7️⃣", "🍀", "💣"];
+
+  function atualizarSaldo() {
+    document.getElementById("saldo").innerHTML = "Saldo: R$" + saldo;
+  }
+
+  function girar() {
+    if (saldo < aposta) {
+      document.getElementById("resultado").innerHTML = "💀 Você ficou sem dinheiro!";
+      return;
+    }
+
+    saldo -= aposta;
+
+    let a = emojis[Math.floor(Math.random() * emojis.length)];
+    let b = emojis[Math.floor(Math.random() * emojis.length)];
+    let c = emojis[Math.floor(Math.random() * emojis.length)];
+
+    document.getElementById("slots").innerHTML = a + " " + b + " " + c;
+
+    if (a === b && b === c) {
+      saldo += 50;
+      document.getElementById("resultado").innerHTML = "🎉 JACKPOT! +R$50";
+    } else if (a === "💣" || b === "💣" || c === "💣") {
+      document.getElementById("resultado").innerHTML = "💥 Perdeu tudo nessa rodada!";
+    } else {
+      document.getElementById("resultado").innerHTML = "😅 Nada dessa vez...";
+    }
+
+    atualizarSaldo();
+  }
+</script>
+
+</body>
+</html>
