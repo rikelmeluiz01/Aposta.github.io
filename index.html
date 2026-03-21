@@ -1,24 +1,75 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Cassino do Rikelme 🎰</title>
+<meta charset="UTF-8">
+<title>Cassino do Rikelme 🎰</title>
+
+<style>
+body {
+  background: #111;
+  color: white;
+  text-align: center;
+  font-family: Arial;
+  margin-top: 50px;
+}
+
+h1 {
+  color: gold;
+  font-size: 40px;
+}
+
+#slots {
+  font-size: 70px;
+  margin: 20px;
+}
+
+button {
+  padding: 15px 30px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: none;
+  background: green;
+  color: white;
+  cursor: pointer;
+  margin: 10px;
+}
+
+input {
+  padding: 10px;
+  font-size: 18px;
+}
+
+#saldo {
+  font-size: 25px;
+  color: lightgreen;
+}
+
+#ranking {
+  margin-top: 30px;
+}
+</style>
 </head>
-<body style="text-align:center; background:#111; color:white; font-family:Arial;">
+
+<body>
 
 <h1>🎰 Cassino do Rikelme 🎰</h1>
 
-<input id="nome" placeholder="Digite seu nome">
+<input id="nome" placeholder="Seu nome">
+<br>
 <button onclick="entrar()">Entrar</button>
 
 <h2 id="saldo"></h2>
 
-<button onclick="girar()">Girar</button>
+<div id="slots">❓ ❓ ❓</div>
+
+<button onclick="girar()">Girar 🎰</button>
 
 <h3 id="resultado"></h3>
 
-<h2>🏆 Ranking Global</h2>
-<ul id="ranking"></ul>
+<div id="ranking">
+  <h2>🏆 Ranking Global</h2>
+  <ul id="lista"></ul>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
@@ -38,6 +89,7 @@ const db = getFirestore(app);
 
 let saldo = 100;
 let nome = "";
+const emojis = ["7️⃣","🍀","💣"];
 
 window.entrar = function() {
   nome = document.getElementById("nome").value;
@@ -45,33 +97,51 @@ window.entrar = function() {
   atualizarRanking();
 }
 
-async function salvar() {
-  await setDoc(doc(db, "ranking", nome), {
-    nome: nome,
-    saldo: saldo
+function animar(callback){
+  let count = 0;
+  let intervalo = setInterval(()=>{
+    let a = emojis[Math.floor(Math.random()*3)];
+    let b = emojis[Math.floor(Math.random()*3)];
+    let c = emojis[Math.floor(Math.random()*3)];
+    document.getElementById("slots").innerHTML = a+" "+b+" "+c;
+
+    count++;
+    if(count > 10){
+      clearInterval(intervalo);
+      callback(a,b,c);
+    }
+  },100);
+}
+
+async function salvar(){
+  await setDoc(doc(db,"ranking",nome),{
+    nome:nome,
+    saldo:saldo
   });
 }
 
-async function atualizarRanking() {
-  const querySnapshot = await getDocs(collection(db, "ranking"));
-  let lista = document.getElementById("ranking");
+async function atualizarRanking(){
+  const dados = await getDocs(collection(db,"ranking"));
+  let lista = document.getElementById("lista");
   lista.innerHTML = "";
 
-  querySnapshot.forEach((doc) => {
+  dados.forEach(doc=>{
     let li = document.createElement("li");
     li.textContent = doc.data().nome + " - R$" + doc.data().saldo;
     lista.appendChild(li);
   });
 }
 
-window.girar = function() {
-  saldo += Math.floor(Math.random() * 50) - 20;
-  document.getElementById("saldo").innerText = "Saldo: R$" + saldo;
+window.girar = function(){
+  if(!nome){
+    alert("Digite seu nome primeiro!");
+    return;
+  }
 
-  salvar();
-  atualizarRanking();
-}
-</script>
+  saldo -= 10;
 
-</body>
-</html>
+  animar((a,b,c)=>{
+    if(a===b && b===c){
+      saldo += 50;
+      document.getElementById("resultado").innerText = "🎉 JACKPOT!";
+    } else if(a==="💣"||b==="💣"||c==="💣
